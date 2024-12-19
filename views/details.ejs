@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+  <%- include("./partials/header.ejs") %>
+  <body>
+    <%- include("./partials/nav.ejs") %>
+
+    <div class="details content">
+      <h1><%= blogs.title %></h1>
+      <div class="content">
+        <p><%- blogs.bbody %></p>
+      </div>
+
+      <a class="delete" data-doc="<%=blogs._id%>">delete</a>
+    </div>
+
+    <%- include("./partials/footer.ejs") %>
+
+    <!-- Below script will run on client browser i.e clientside when we add script tag  -->
+
+    <script>
+      const deleteicon = document.querySelector("a.delete");
+
+      deleteicon.addEventListener("click", () => {
+        const deleteurl = `/blogs/${deleteicon.dataset.doc}`;
+        fetch(deleteurl, {
+          method: "DELETE"
+        })
+          .then((response) => response.json())
+          .then((data) => window.location.href = data.redirect)
+          .catch(error => console.log(error));
+      });
+    </script>
+  </body>
+</html>
