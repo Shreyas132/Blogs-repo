@@ -1,12 +1,12 @@
 {
   "name": "node_nija",
   "version": "1.0.0",
-  "main": "files.js",
+  "main": "app.js",
   "directories": {
     "doc": "docs"
   },
   "scripts": {
-    "start": "nodemon app.js"
+    "start": "node app.js"
   },
   "author": "",
   "license": "ISC",
