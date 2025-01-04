@@ -1,0 +1,20 @@
+<link rel="stylesheet" href="/style1.css" />
+<title>Blog | <%=title%></title>
+<h1>Login</h1>
+<%if(messages.error) { %> <%= messages.error %> <%}%>
+
+<div class="h2div">
+  <h2 id="h2">Login to create new blog</h2>
+</div>
+<form action="/login" method="post">
+  <div>
+    <label for="email">Email</label>
+    <input id="email" type="email" name="email" required />
+  </div>
+  <div>
+    <label for="password">password</label>
+    <input id="password" type="password" name="password" required />
+  </div>
+  <button type="submit">Login</button>
+  <a href="/register">Register</a>
+</form>

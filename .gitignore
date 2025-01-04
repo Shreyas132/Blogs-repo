@@ -1,3 +1,6 @@
 nonja 
 node_modules
 package-lock.json
+.env
+docs
+files.js

@@ -1,0 +1,25 @@
+<link rel="stylesheet" href="/style1.css" />
+<title>Blog | <%=title%></title>
+
+<div class="h2div">
+    <a id="Home" href="/">Home</a>
+    <h1>Register</h1>
+</div>
+
+<form action="/register" method="post" >
+
+    <div>
+        <label for="name">Username</label>
+        <input id="name" type="text" name="name" required />
+    </div>
+    <div>
+        <label for="email">Email</label>
+        <input id="email" type="email" name="email" required />
+    </div>
+    <div>
+        <label for="password">password</label>
+        <input id="password" type="password" name="password" required />
+    </div>
+    <button type="submit">Register</button>
+    <a href="/login">Login</a>
+</form>

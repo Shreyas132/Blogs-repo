@@ -1,4 +1,7 @@
 const Blogs = require("../models/blogs");
+const Usercred = require("../models/usercredentials");
+const bcrypt = require("bcrypt");
+const passport = require("passport");
 
 const handlegetall = async (req, res) => {
   try {
@@ -21,7 +24,7 @@ const handlepost = async (req, res) => {
     const { title, snippet, bbody } = req.body;
     if (!title || !snippet || !bbody)
       return res.status(400).send("Title,snippet and bbody must not be empty");
-    const newblogs = new Blogs({ title, snippet, bbody });
+    const newblogs = new Blogs({ title, snippet, bbody, userId: req.user._id });
     await newblogs.save();
     res.redirect("/blogs");
   } catch (error) {
@@ -43,12 +46,93 @@ const handlegetone = async (req, res) => {
 const handledelete = async (req, res) => {
   const userId = req.params.id;
   try {
-    const deleteone = await Blogs.findByIdAndDelete(userId);
+    const deleteone = await Blogs.findById(userId);
+    if (!deleteone) {
+      res.status(404).send("blog not found");
+    }
+    if (deleteone.userId.toString() !== req.user._id.toString())
+      res.status(403).json({error:"you are not authorised to delete"});
+    await Blogs.findByIdAndDelete(userId);
     if (!deleteone) return res.status(404).send("no details to delete");
-    res.json({ redirect: "/blogs" });
+    res.json({ redirect: "/blogs"});
   } catch (error) {
     res.status(500).send("Internal server error");
   }
 };
+const renderregister = (req, res) => {
+  res.render("register", { title: "user Registration" });
+};
 
-module.exports = {handledelete,handleformcretetemplate,handlegetall,handlegetone,handlepost}
+const handleuserregister = async (req, res) => {
+  const saltrounds = 10;
+  try {
+    const { name, email, password } = req.body;
+    if (!name || !email || !password)
+      return res
+        .status(400)
+        .send("name ,email and password fields should not be empty");
+    const hashedpassword = await bcrypt.hash(password, saltrounds);
+    const createnew = new Usercred({ name, email, password: hashedpassword });
+    await createnew.save();
+    console.log(createnew);
+    res.redirect("/login");
+  } catch (error) {
+    res.status(500).send("Internal server error");
+  }
+};
+const renderlogin = (req, res) => {
+  res.render("login", { title: "user Login" });
+};
+
+const handlelogin = (req, res, next) => {
+  passport.authenticate("local", (err, user, info) => {
+    if (err) return next(err);
+    if (!user) {
+      req.flash("error", info.message);
+      return res.redirect("/login");
+    }
+    req.logIn(user, (err) => {
+      if (err) return next(err);
+      const returnTo = req.session.returnTo || "/blogs/create";
+      delete req.session.returnTo;
+      return res.redirect(returnTo);
+    });
+  })(req, res, next);
+};
+
+const handlelogout = async (req, res) => {
+  try {
+    req.logout((err) => {
+      if (err) {
+        console.log("error during log out");
+        return res.status(500).send("error during logout");
+      }
+
+      req.session.destroy((err) => {
+        if (err) {
+          console.log("error while destroying session", err);
+          return res.status(500).send("failed to destroy session");
+        }
+        res.clearCookie("connect.sid");
+        // req.flash("succes","you have been logged out succesfully")
+        res.redirect("/blogs");
+      });
+    });
+  } catch (error) {
+    console.log("error while logging out", error);
+    res.status(500).send("internal server error");
+  }
+};
+
+module.exports = {
+  handledelete,
+  handleformcretetemplate,
+  handlegetall,
+  handlegetone,
+  handlepost,
+  renderregister,
+  handleuserregister,
+  renderlogin,
+  handlelogin,
+  handlelogout,
+};

@@ -12,8 +12,13 @@ const BlogsSchema = new mongoose.Schema({
     bbody : {
         type:String,
         required:true
+    },
+    userId:{
+        type:mongoose.Schema.Types.ObjectId,
+        ref:"Usercred",
+        required:true
     }
-})
+},{timestamps:true} )
 
 const Blogs = mongoose.model("Blogs",BlogsSchema)
 
