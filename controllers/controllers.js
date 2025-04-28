@@ -1,6 +1,9 @@
 const Blogs = require("../models/blogs");
 const Usercred = require("../models/usercredentials");
 const bcrypt = require("bcrypt");
+const {JSDOM} = require("jsdom")
+const {window} = new JSDOM ('')
+const DOMPurify = require("dompurify")(window);
 const passport = require("passport");
 
 const handlegetall = async (req, res) => {
@@ -24,10 +27,19 @@ const handlepost = async (req, res) => {
     const { title, snippet, bbody } = req.body;
     if (!title || !snippet || !bbody)
       return res.status(400).send("Title,snippet and bbody must not be empty");
-    const newblogs = new Blogs({ title, snippet, bbody, userId: req.user._id });
+    const sanitizedTitle = DOMPurify.sanitize(title);
+    const sanitizedSnippet = DOMPurify.sanitize(snippet);
+    const sanitizedBody = DOMPurify.sanitize(bbody) || "[Content removed for security]"
+    const newblogs = new Blogs({
+      title: sanitizedTitle,
+      snippet: sanitizedSnippet,
+      bbody: sanitizedBody,
+      userId: req.user._id,
+    });
     await newblogs.save();
     res.redirect("/blogs");
   } catch (error) {
+    console.log("error saving the blog",error)
     res.status(500).send("internal server error");
   }
 };
@@ -51,10 +63,10 @@ const handledelete = async (req, res) => {
       res.status(404).send("blog not found");
     }
     if (deleteone.userId.toString() !== req.user._id.toString())
-      res.status(403).json({error:"you are not authorised to delete"});
+      res.status(403).json({ error: "you are not authorised to delete" });
     await Blogs.findByIdAndDelete(userId);
     if (!deleteone) return res.status(404).send("no details to delete");
-    res.json({ redirect: "/blogs"});
+    res.json({ redirect: "/blogs" });
   } catch (error) {
     res.status(500).send("Internal server error");
   }
